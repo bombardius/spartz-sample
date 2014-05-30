@@ -1,5 +1,8 @@
 <?php
 
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+
+
 /*
 |--------------------------------------------------------------------------
 | Register The Laravel Class Loader
@@ -46,10 +49,23 @@ Log::useFiles(storage_path().'/logs/laravel.log');
 |
 */
 
+// Handle any malformed urls caught in the routing process
+App::missing(function($exception)
+  {
+    return Response::make( '', 404 );
+  });
+
+// Default error handler
 App::error(function(Exception $exception, $code)
-{
-	Log::error($exception);
-});
+  {
+    Log::error($exception);
+  });
+
+// Handle situations where the city / state cannot be found in the list
+App::error( function(ModelNotFoundException $exception, $code )
+  {
+    return Response::json( 'Invalid city / state combination', 400 );
+  });
 
 /*
 |--------------------------------------------------------------------------
